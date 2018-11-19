@@ -1151,7 +1151,7 @@ local function addControlsForIfLine(args, order, data, conditionVariable, condit
             order = order,
             values = currentConditionTemplate.values,
             get = function()
-              return currentConditionTemplate.values[check.value] and check.value or "member"
+              return not check.value and "player" or currentConditionTemplate.values[check.value] and check.value or "member"
             end,
             set = setValue
           }
@@ -1168,7 +1168,7 @@ local function addControlsForIfLine(args, order, data, conditionVariable, condit
             end,
             set = setValue,
             hidden = function()
-              return currentConditionTemplate.values[conditions[i].check.value] and conditions[i].check.value ~= "member"
+              return not conditions[i].check.value or currentConditionTemplate.values[conditions[i].check.value] and conditions[i].check.value ~= "member"
             end
           }
           order = order + 1;
