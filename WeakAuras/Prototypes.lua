@@ -4405,9 +4405,6 @@ WeakAuras.event_prototypes = {
         "UNIT_SPELLCAST_FAILED_QUIET",
       };
       AddUnitChangeEvents(trigger.unit, result)
-      if trigger.target ~= "" then
-        tinsert(result, "UNIT_TARGET")
-      end
       return result
     end,
     internal_events = {
@@ -4427,7 +4424,6 @@ WeakAuras.event_prototypes = {
           local trigger_interruptible = %s
           local trigger_castType = [[%s]]
           local remainingCheck = %s
-          local trigger_target = [[%s]]
           local trigger_clone = %s
           local cloneId = ""
 
@@ -4438,7 +4434,6 @@ WeakAuras.event_prototypes = {
           if event == "PLAYER_TARGET_CHANGED" then
             sourceUnit = trigger_unit
           end
-          local destUnit = sourceUnit and sourceUnit .. "-target"
 
           if sourceUnit and UnitExists(sourceUnit) and (trigger_unit == "multi" or UnitIsUnit(sourceUnit, trigger_unit)) then
             local show, expirationTime, castType, spell, icon, startTime, endTime, interruptible, spellId, remaining
@@ -4469,7 +4464,6 @@ WeakAuras.event_prototypes = {
               or trigger_spellName ~= "" and trigger_spellName ~= spell
               or trigger_castType  ~= "" and trigger_castType ~= castType
               or trigger_interruptible ~= nil and trigger_interruptible ~= interruptible
-              or trigger_target ~= "" and not UnitIsUnit(trigger_target, destUnit)
               then
                 show = false
               elseif remainingCheck and remaining >= remainingCheck and remaining > 0 then
@@ -4489,8 +4483,6 @@ WeakAuras.event_prototypes = {
                 interruptible = interruptible,
                 sourceUnit = sourceUnit,
                 sourceName = sourceUnit and UnitName(sourceUnit) or "",
-                destUnit = UnitExists(destUnit) and destUnit,
-                destName = UnitExists(destUnit) and UnitName(destUnit) or "",
                 show = true,
                 changed = true,
                 resort = true
@@ -4521,7 +4513,6 @@ WeakAuras.event_prototypes = {
         trigger.use_interruptible and "true" or trigger.use_interruptible == false and "false" or "nil",
         trigger.use_castType and trigger.castType or "",
         trigger.use_remaining and tonumber(trigger.remaining or 0) or "nil",
-        trigger.use_destUnit and trigger.destUnit or "",
         trigger.unit == "multi" and trigger.use_clone and "true" or "false"
       )
       return ret
@@ -4532,7 +4523,7 @@ WeakAuras.event_prototypes = {
         name = "unit",
         display = L["Unit"],
         type = "unit",
-        values = function(trigger) 
+        values = function(trigger)
           if trigger.use_inverse then
             return WeakAuras.actual_unit_types_with_specific
           else
@@ -4594,25 +4585,6 @@ WeakAuras.event_prototypes = {
       {
         name = "sourceName",
         display = L["Caster Name"],
-        store = true,
-        hidden = true
-      },
-      {
-        name = "destUnit",
-        display = L["Target"],
-        type = "unit",
-        values = "actual_unit_types_with_specific",
-        conditionType = "unit",
-        conditionTest = function(state, unit, op)
-          return state and state.show and state.destUnit and (UnitIsUnit(state.destUnit, unit) == (op == "=="))
-        end,
-        store = true,
-        test = "true",
-        enable = function(trigger) return not trigger.use_inverse end
-      },
-      {
-        name = "destName",
-        display = L["Target Name"],
         store = true,
         hidden = true
       },
