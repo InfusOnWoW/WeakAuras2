@@ -149,16 +149,23 @@ end]=]
 }
 
 local function ConstructTextEditor(frame)
-  local group = AceGUI:Create("InlineGroup")
+  local group = AceGUI:Create("WeakAurasInlineGroup")
   group.frame:SetParent(frame)
-  group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -17, 12)
-  group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 17, -10)
+  group.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -16);
+  group.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -16, 46);
   group.frame:Hide()
-  group:SetLayout("fill")
+  group:SetLayout("flow")
+
+  local title = AceGUI:Create("Label")
+  title:SetFontObject(GameFontNormalHuge)
+  title:SetFullWidth(true)
+  title:SetText(L["Code Editor"])
+  group:AddChild(title)
 
   local editor = AceGUI:Create("MultiLineEditBox")
-  editor:SetWidth(400)
-  editor.button:Hide()
+  editor:SetFullWidth(true)
+  editor:SetFullHeight(true)
+  editor:DisableButton(true)
   local fontPath = SharedMedia:Fetch("font", "Fira Mono Medium")
   if (fontPath) then
     editor.editBox:SetFont(fontPath, 12)
@@ -191,7 +198,7 @@ local function ConstructTextEditor(frame)
       group:CancelClose()
     end
   )
-  cancel:SetPoint("BOTTOMRIGHT", -27, 13)
+  cancel:SetPoint("BOTTOMRIGHT", -20, -24)
   cancel:SetFrameLevel(cancel:GetFrameLevel() + 1)
   cancel:SetHeight(20)
   cancel:SetWidth(100)
@@ -218,12 +225,13 @@ local function ConstructTextEditor(frame)
   settings_frame:RegisterForClicks("LeftButtonUp")
 
   local helpButton = CreateFrame("Button", nil, group.frame, "UIPanelButtonTemplate")
-  helpButton:SetPoint("BOTTOMLEFT", 12, 13)
+  helpButton:SetPoint("BOTTOMLEFT", 12, -24)
   helpButton:SetFrameLevel(cancel:GetFrameLevel() + 1)
   helpButton:SetHeight(20)
   helpButton:SetWidth(100)
   helpButton:SetText(L["Help"])
 
+  -- TODO did I break something with the help button
   local urlText = CreateFrame("editbox", nil, group.frame)
   urlText:SetFrameLevel(cancel:GetFrameLevel() + 1)
   urlText:SetFont(STANDARD_TEXT_FONT, 12)

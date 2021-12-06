@@ -2746,12 +2746,14 @@ Private.update_categories = {
     fields = {},
     default = true,
     label = L["Remove Obsolete Auras"],
+    skipInSummary = true
   },
   {
     name = "newchildren",
     fields = {},
     default = true,
     label = L["Add Missing Auras"],
+    skipInSummary = true
   },
   {
     name = "metadata",
@@ -2774,6 +2776,7 @@ Private.internal_fields = {
   tocversion = true,
   parent = true,
   controlledChildren = true,
+  source = true
 }
 
 -- fields that are not included in exported data
