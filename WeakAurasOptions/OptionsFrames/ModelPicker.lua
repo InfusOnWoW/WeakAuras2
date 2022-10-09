@@ -293,7 +293,7 @@ local function ConstructModelPicker(frame)
 
     self.selectedValues.model_st_us = model_us or self.selectedValues.model_st_us;
 
-    WeakAuras.SetModel(self.model, self.selectedValues.model_path, self.selectedValues.model_fileId)
+    WeakAuras.SetModel.SetModel(self.model, self.selectedValues.model_path, self.selectedValues.model_fileId)
     self.model:SetTransformFixed(self.selectedValues.model_st_tx / 1000, self.selectedValues.model_st_ty / 1000, self.selectedValues.model_st_tz / 1000,
       rad(self.selectedValues.model_st_rx), rad(self.selectedValues.model_st_ry), rad(self.selectedValues.model_st_rz),
       self.selectedValues.model_st_us / 1000);
