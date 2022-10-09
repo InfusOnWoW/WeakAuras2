@@ -183,6 +183,7 @@ local blockedTables = {
   SendMailMoneyGold = true,
   MailFrameTab2 = true,
   ChatFrame1 = true,
+  WeakAurasSaved = true,
   WeakAurasOptions = true,
   WeakAurasOptionsSaved = true
 }
@@ -455,7 +456,10 @@ local FakeWeakAurasMixin = {
   },
   override = {
     me = GetUnitName("player", true),
-    myGUID = UnitGUID("player")
+    myGUID = UnitGUID("player"),
+    GetData = function(id)
+      return CopyTable(WeakAuras.GetData(id))
+    end
   },
   blocked = blocked,
   setBlocked = function()
