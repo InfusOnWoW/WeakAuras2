@@ -132,7 +132,6 @@ function WeakAuras.SpellSchool(school)
 end
 
 function WeakAuras.TestSchool(spellSchool, test)
-  print(spellSchool, test, type(spellSchool), type(test))
   return spellSchool == test
 end
 
