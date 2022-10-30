@@ -82,6 +82,7 @@ local function ConstructTexturePicker(frame)
   group.frame:Hide();
   group.children = {};
   group.categories = {};
+  group.textureWidgets = {}
 
   local dropdown = AceGUI:Create("DropdownGroup");
   dropdown:SetLayout("fill");
@@ -94,41 +95,95 @@ local function ConstructTexturePicker(frame)
 
   local scroll = AceGUI:Create("ScrollFrame");
   scroll:SetWidth(540);
-  scroll:SetLayout("flow");
-  scroll.frame:SetClipsChildren(true);
   dropdown:AddChild(scroll);
 
-  local function texturePickerGroupSelected(widget, event, uniquevalue)
-    scroll:ReleaseChildren();
-    for texturePath, textureName in pairs(group.textures[uniquevalue]) do
-      local textureWidget = AceGUI:Create("WeakAurasTextureButton");
-      if (group.SetTextureFunc) then
-        group.SetTextureFunc(textureWidget, texturePath, textureName);
-      else
-        textureWidget:SetTexture(texturePath, textureName);
-        local d = group.textureData;
-        textureWidget:ChangeTexture(d.r, d.g, d.b, d.a, d.rotate, d.discrete_rotation, d.rotation, d.mirror, d.blendMode);
-      end
-
-      if group.selectedTextures[texturePath] then
-        textureWidget:Pick()
-      end
-
-      textureWidget:SetClick(function()
-        group:Pick(texturePath);
-      end);
-      scroll:AddChild(textureWidget);
-      table.sort(scroll.children, function(a, b)
-        local aPath, bPath = a:GetTexturePath(), b:GetTexturePath();
-        local aNum, bNum = tonumber(aPath:match("%d+")), tonumber(bPath:match("%d+"));
-        local aNonNumber, bNonNumber = aPath:match("[^%d]+"), bPath:match("[^%d]+")
-        if(aNum and bNum and aNonNumber == bNonNumber) then
-          return aNum < bNum;
-        else
-          return aPath < bPath;
-        end
-      end);
+  local function UpdateShownWidgets()
+    -- Acquires/Releases widgets based on the scroll position
+    for _, widget in ipairs(group.textureWidgets) do
+      widget.frame:Hide()
+      widget:Release()
     end
+    wipe(group.textureWidgets)
+
+    local texturesPerRow = floor(scroll.content:GetWidth() / 128)
+    local topRow = floor((scroll.content.offset or 0) / 128)
+    local bottomRow = topRow + ceil(scroll.frame:GetHeight() / 128)
+
+    local first = topRow * texturesPerRow + 1
+    local last = first + (bottomRow - topRow + 1) * texturesPerRow - 1
+
+    for i = first, last do
+      local data = group.selectedGroupSorted[i]
+      if data then
+        local texturePath, textureName = data[1], data[2]
+        local textureWidget = AceGUI:Create("WeakAurasTextureButton");
+        tinsert(group.textureWidgets, textureWidget)
+        if (group.SetTextureFunc) then
+          group.SetTextureFunc(textureWidget, texturePath, textureName);
+        else
+          textureWidget:SetTexture(texturePath, textureName);
+          local d = group.textureData;
+          textureWidget:ChangeTexture(d.r, d.g, d.b, d.a, d.rotate, d.discrete_rotation, d.rotation, d.mirror, d.blendMode);
+        end
+        if group.selectedTextures[texturePath] then
+          textureWidget:Pick()
+        end
+        textureWidget:SetClick(function()
+          group:Pick(texturePath);
+        end);
+
+        local index = i - 1 -- Math is easier if we start counting at 0
+        local textureY = floor(index / texturesPerRow) * -128
+        local textureX = (index % texturesPerRow) * 128
+
+        textureWidget.frame:Show()
+        textureWidget.frame:SetParent(scroll.content)
+        textureWidget.frame:SetPoint("TOPLEFT", textureX, textureY)
+      end
+    end
+  end
+
+  -- hook SetPoint of content
+  local oldSetPoint = scroll.content.SetPoint
+  scroll.content.SetPoint = function(self, point, x, y, ...)
+    oldSetPoint(self, point, x, y, ...)
+    self.offset = y
+    -- We rely on AceGUI not changing how it scrolls the actual content!
+    if point == "TOPRIGHT" then
+      UpdateShownWidgets()
+    end
+  end
+
+  AceGUI:RegisterLayout("WeakAurasTexturePickerLayout",
+    function(content, children)
+      local texturesPerRow = floor(content:GetWidth() / 128)
+      local totalHeight = ceil(#group.selectedGroupSorted / texturesPerRow) * 128
+
+      if(content.obj.LayoutFinished) then
+        content.obj:LayoutFinished(nil, totalHeight);
+      end
+  end)
+  scroll:SetLayout("WeakAurasTexturePickerLayout")
+
+  local function texturePickerGroupSelected(widget, event, uniquevalue)
+    group.selectedGroupSorted = {}
+    for texturePath, textureName in pairs(group.textures[uniquevalue]) do
+      tinsert(group.selectedGroupSorted, {texturePath, textureName})
+    end
+
+    table.sort(group.selectedGroupSorted, function(a, b)
+      local aPath, bPath = a[1], b[1]
+      local aNum, bNum = tonumber(aPath:match("%d+")), tonumber(bPath:match("%d+"));
+      local aNonNumber, bNonNumber = aPath:match("[^%d]+"), bPath:match("[^%d]+")
+      if(aNum and bNum and aNonNumber == bNonNumber) then
+        return aNum < bNum;
+      else
+        return aPath < bPath;
+        end
+    end)
+
+    scroll:DoLayout()
+    UpdateShownWidgets()
   end
 
   dropdown:SetCallback("OnGroupSelected", texturePickerGroupSelected)
@@ -224,6 +279,7 @@ local function ConstructTexturePicker(frame)
         dropdown:SetGroup(categoryName);
       end
     end
+    UpdateShownWidgets()
   end
 
   function group.Close()
