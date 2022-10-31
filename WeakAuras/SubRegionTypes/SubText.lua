@@ -132,24 +132,35 @@ local function animRotate(object, degrees, anchor)
 end
 
 -- Calculate offset after rotation
-local function getRotateOffset(object, degrees, point)
+local function getRotateOffset(object, rotation, point)
   -- Any rotation at all?
-  if degrees ~= 0 then
+
+  local sin = sin
+  local cos = cos
+  if WeakAuras.IsRetail() then
+    -- For retail rotation is in radians, math.sin/cos uses radians
+    -- The global sin/cos use degrees which is correct for classic
+    -- Yay!
+    sin = math.sin
+    cos = math.cos
+  end
+
+  if rotation ~= 0 then
     -- Basic offset
     local originoffset = object:GetStringHeight() / 2;
-    local xo = -1 * originoffset * sin(degrees);
-    local yo = originoffset * (cos(degrees) - 1);
+    local xo = -1 * originoffset * sin(rotation);
+    local yo = originoffset * (cos(rotation) - 1);
 
     -- Alignment dependant offset
     if point:find("BOTTOM", 1, true) then
-      yo = yo + (1 - cos(degrees)) * (object:GetStringWidth() / 2 - originoffset);
+      yo = yo + (1 - cos(rotation)) * (object:GetStringWidth() / 2 - originoffset);
     elseif point:find("TOP", 1, true) then
-      yo = yo - (1 - cos(degrees)) * (object:GetStringWidth() / 2 - originoffset);
+      yo = yo - (1 - cos(rotation)) * (object:GetStringWidth() / 2 - originoffset);
     end
     if point:find("RIGHT", 1, true) then
-      xo = xo + (1 - cos(degrees)) * (object:GetStringWidth() / 2 - originoffset);
+      xo = xo + (1 - cos(rotation)) * (object:GetStringWidth() / 2 - originoffset);
     elseif point:find("LEFT", 1, true) then
-      xo = xo - (1 - cos(degrees)) * (object:GetStringWidth() / 2 - originoffset);
+      xo = xo - (1 - cos(rotation)) * (object:GetStringWidth() / 2 - originoffset);
     end
 
     -- Done
@@ -409,17 +420,28 @@ local function modify(parent, region, parentData, data, first)
   region.text_anchorXOffset = data.text_anchorXOffset
   region.text_anchorYOffset = data.text_anchorYOffset
 
-  local textDegrees = data.rotateText == "LEFT" and 90 or data.rotateText == "RIGHT" and -90 or 0;
+  local textRotation
+  -- For retail using radians works better, since text:SetRotation wants radians
+  -- For classic, we use degrees, because animation SetRotation wants degrees
+  if WeakAuras.IsRetail() then
+    textRotation = data.rotateText == "LEFT" and math.pi / 2 or data.rotateText == "RIGHT" and -math.pi / 2 or 0
+  else
+    textRotation = data.rotateText == "LEFT" and 90 or data.rotateText == "RIGHT" and -90 or 0
+  end
 
   region.UpdateAnchor = function(self)
-    local xo, yo = getRotateOffset(text, textDegrees, selfPoint)
+    local xo, yo = getRotateOffset(text, textRotation, selfPoint)
     parent:AnchorSubRegion(text, "point", selfPoint, data.text_anchorPoint, (self.text_anchorXOffset or 0) + xo, (self.text_anchorYOffset or 0) + yo)
   end
 
   region:UpdateAnchor()
-  animRotate(text, textDegrees, selfPoint)
+  if WeakAuras.IsRetail() then
+    text:SetRotation(textRotation)
+  else
+    animRotate(text, textRotation, selfPoint)
+  end
 
-  if textDegrees == 0 then
+  if textRotation == 0 then
     region.UpdateAnchorOnTextChange = function() end
   else
     region.UpdateAnchorOnTextChange = region.UpdateAnchor
