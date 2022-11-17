@@ -71,7 +71,6 @@ local function createOptions(id, data)
       width = WeakAuras.normalWidth,
       name = L["Mirror"],
       order = 20,
-      hidden = IsAtlas(data.texture)
     },
     alpha = {
       type = "range",
@@ -101,7 +100,9 @@ local function createOptions(id, data)
       step = 1,
       bigStep = 3,
       order = 35,
-      hidden = function() return not data.rotate or IsAtlas(data.texture) end,
+      hidden = function()
+        return not (data.rotate and not IsAtlas(data.texture))
+      end,
     },
     discrete_rotation = {
       type = "range",
@@ -112,7 +113,9 @@ local function createOptions(id, data)
       max = 360,
       step = 90,
       order = 35,
-      hidden = function() return data.rotate or IsAtlas(data.texture) end,
+      hidden = function()
+        return not (not data.rotate or IsAtlas(data.texture))
+      end,
     },
     textureWrapMode = {
       type = "select",
@@ -169,11 +172,8 @@ local function modifyThumbnail(parent, region, data, fullModify, size)
   region.texture:SetVertexColor(data.color[1], data.color[2], data.color[3], data.color[4]);
   region.texture:SetBlendMode(data.blendMode);
 
-  if region.texture.IsAtlas then
-    return
-  end
   local ulx,uly , llx,lly , urx,ury , lrx,lry;
-  if(data.rotate) then
+  if data.rotate and not region.texture.IsAtlas then
     local angle = rad(135 - data.rotation);
     local vx = math.cos(angle);
     local vy = math.sin(angle);
