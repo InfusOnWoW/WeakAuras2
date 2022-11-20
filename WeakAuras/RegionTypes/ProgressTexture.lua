@@ -154,9 +154,9 @@ end
 
 local spinnerFunctions = {};
 
-function spinnerFunctions.SetAuraRotation(self, degrees)
+function spinnerFunctions.SetAuraRotation(self, radians)
   for i = 1, 3 do
-    self.textures[i]:SetRotation(degrees)
+    self.textures[i]:SetRotation(radians)
   end
 end
 
@@ -223,7 +223,7 @@ function spinnerFunctions.SetProgress(self, region, angle1, angle2)
     -- SHOW everything
     self.coords[1]:SetFull();
     self.coords[1]:Transform(crop_x, crop_y, texRotation, mirror_h, mirror_v)
-    self.coords[1]:Show();
+    self.coords[1]:Show(texRotation)
 
     self.coords[2]:Hide();
     self.coords[3]:Hide();
@@ -242,18 +242,18 @@ function spinnerFunctions.SetProgress(self, region, angle1, angle2)
   if (index1 + 1 >= index2) then
     self.coords[1]:SetAngle(width, height, angle1, angle2);
     self.coords[1]:Transform(crop_x, crop_y, texRotation, mirror_h, mirror_v)
-    self.coords[1]:Show();
+    self.coords[1]:Show(texRotation)
     self.coords[2]:Hide();
     self.coords[3]:Hide();
   elseif(index1 + 3 >= index2) then
     local firstEndAngle = (index1 + 1) * 90 + 45;
     self.coords[1]:SetAngle(width, height, angle1, firstEndAngle);
     self.coords[1]:Transform(crop_x, crop_y, texRotation, mirror_h, mirror_v)
-    self.coords[1]:Show();
+    self.coords[1]:Show(texRotation)
 
     self.coords[2]:SetAngle(width, height, firstEndAngle, angle2);
     self.coords[2]:Transform(crop_x, crop_y, texRotation, mirror_h, mirror_v)
-    self.coords[2]:Show();
+    self.coords[2]:Show(texRotation)
 
     self.coords[3]:Hide();
   else
@@ -262,15 +262,15 @@ function spinnerFunctions.SetProgress(self, region, angle1, angle2)
 
     self.coords[1]:SetAngle(width, height, angle1, firstEndAngle);
     self.coords[1]:Transform(crop_x, crop_y, texRotation, mirror_h, mirror_v)
-    self.coords[1]:Show();
+    self.coords[1]:Show(texRotation)
 
     self.coords[2]:SetAngle(width, height, firstEndAngle, secondEndAngle);
     self.coords[2]:Transform(crop_x, crop_y, texRotation, mirror_h, mirror_v)
-    self.coords[2]:Show();
+    self.coords[2]:Show(texRotation)
 
     self.coords[3]:SetAngle(width, height, secondEndAngle, angle2);
     self.coords[3]:Transform(crop_x, crop_y, texRotation, mirror_h, mirror_v)
-    self.coords[3]:Show();
+    self.coords[3]:Show(texRotation)
   end
 end
 
@@ -346,8 +346,8 @@ local function createTexCoord(texture)
   end
 
   function coord:Show()
-    coord:Apply();
-    coord.texture:Show();
+    coord:Apply()
+    coord.texture:Show()
   end
 
   function coord:SetFull()
@@ -502,7 +502,7 @@ local function createSpinner(parent, layer, drawlayer)
     texture:SetSnapToPixelGrid(false)
     texture:SetTexelSnappingBias(0)
     texture:SetDrawLayer(layer, drawlayer);
-    texture:SetAllPoints(parent);
+    texture:SetAllPoints(parent)
     spinner.textures[i] = texture;
 
     spinner.coords[i] = createTexCoord(texture);
@@ -697,7 +697,7 @@ local textureFunctions = {
     local user_y = region.user_y;
 
     self.coord:Transform(crop_x, crop_y, texRotation, mirror_h, mirror_v, user_x, user_y);
-    self.coord:Apply();
+    self.coord:Apply()
   end,
 
   Update = function(self)
@@ -979,8 +979,6 @@ local function SetOrientation(region, orientation)
 end
 
 local function create(parent)
-  local font = "GameFontHighlight";
-
   local region = CreateFrame("Frame", nil, parent);
   region.regionType = "progresstexture"
   region:SetMovable(true);
@@ -1169,9 +1167,18 @@ local function modify(parent, region, data)
     end
   end
 
+  DoPosition(region)
+
+  function region:ApplyMaskRotation()
+    local totalRotation = (region.texRotation + region.auraRotation) % 360
+    local x, y = region.rotationOrigin.x, region.rotationOrigin.y
+    region.mask:SetRotation(totalRotation / 180 * math.pi, {x = x, y = y})
+    region.maskVisual:SetRotation(totalRotation / 180 * math.pi, {x = x, y = y})
+  end
+
   function region:SetAuraRotation(auraRotation)
     region.auraRotation = auraRotation
-    local auraRotationRadians = region.auraRotation * 180 / math.pi
+    local auraRotationRadians = region.auraRotation / 180 * math.pi
     region.foregroundSpinner:SetAuraRotation(auraRotationRadians)
     region.backgroundSpinner:SetAuraRotation(auraRotationRadians)
     for i = 1, #region.extraSpinners do

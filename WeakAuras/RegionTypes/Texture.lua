@@ -102,7 +102,6 @@ local function modify(parent, region, data)
 
   region.mirror = data.mirror
 
-  -- TODO Modernize that copies discrete_rotation into rotation
   local function GetLegacyFullRotateTexCoord()
     local angle = rad(135)
     local vx = math.cos(angle)
