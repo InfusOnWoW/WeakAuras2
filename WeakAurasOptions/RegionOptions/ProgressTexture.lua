@@ -432,10 +432,17 @@ local function createThumbnail()
   region:SetWidth(32);
   region:SetHeight(32);
 
+  local mask = region:CreateMaskTexture()
+  mask:SetAllPoints(borderframe)
+  mask:SetTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\Square_FullWhite.tga")
+  borderframe.mask = mask
+
   local background = region:CreateTexture(nil, "BACKGROUND");
+  background:AddMaskTexture(mask)
   borderframe.background = background;
 
   local foreground = region:CreateTexture(nil, "ARTWORK");
+  foreground:AddMaskTexture(mask)
   borderframe.foreground = foreground;
 
   local OrgSetTexture = foreground.SetTexture;
@@ -455,8 +462,8 @@ local function createThumbnail()
   end
   background.SetTexture = foreground.SetTexture;
 
-  borderframe.backgroundSpinner = WeakAuras.createSpinner(region, "BACKGROUND", 1);
-  borderframe.foregroundSpinner = WeakAuras.createSpinner(region, "ARTWORK", 1);
+  borderframe.backgroundSpinner = WeakAuras.createSpinner(region, "BACKGROUND", 1, mask);
+  borderframe.foregroundSpinner = WeakAuras.createSpinner(region, "ARTWORK", 1, mask);
 
   return borderframe;
 end
@@ -530,6 +537,8 @@ local function modifyThumbnail(parent, borderframe, data, fullModify, size)
   region.user_x = -1 * (data.user_x or 0);
   region.user_y = data.user_y or 0;
   region.aspect = 1;
+
+  borderframe.mask:SetRotation(region.texRotation / 180 * math.pi)
 
   local function orientHorizontal()
     foreground:ClearAllPoints();

@@ -491,7 +491,7 @@ local function createTexCoord(texture)
 end
 
 
-local function createSpinner(parent, layer, drawlayer)
+local function createSpinner(parent, layer, drawlayer, mask)
   local spinner = {};
   spinner.textures = {};
   spinner.coords = {};
@@ -503,6 +503,7 @@ local function createSpinner(parent, layer, drawlayer)
     texture:SetTexelSnappingBias(0)
     texture:SetDrawLayer(layer, drawlayer);
     texture:SetAllPoints(parent)
+    texture:AddMaskTexture(mask)
     spinner.textures[i] = texture;
 
     spinner.coords[i] = createTexCoord(texture);
@@ -706,11 +707,12 @@ local textureFunctions = {
 }
 
 
-local function createTexture(region, layer, drawlayer)
+local function createTexture(region, layer, drawlayer, mask)
   local texture = region:CreateTexture(nil, layer);
   texture:SetSnapToPixelGrid(false)
   texture:SetTexelSnappingBias(0)
   texture:SetDrawLayer(layer, drawlayer);
+  texture:AddMaskTexture(mask)
 
   for k, v in pairs(textureFunctions) do
     texture[k] = v;
@@ -781,7 +783,7 @@ end
 
 local function ensureExtraTextures(region, count)
   for i = #region.extraTextures + 1, count do
-    local extraTexture = createTexture(region, "ARTWORK", min(i, 7));
+    local extraTexture = createTexture(region, "ARTWORK", min(i, 7), region.mask)
     WeakAuras.SetTextureOrAtlas(extraTexture, region.currentTexture, region.textureWrapMode, region.textureWrapMode)
     extraTexture:SetBlendMode(region.foreground:GetBlendMode());
     extraTexture:SetOrientation(region.orientation, region.compress, region.slanted, region.slant, region.slantFirst, region.slantMode);
@@ -792,7 +794,7 @@ end
 
 local function ensureExtraSpinners(region, count)
   for i = #region.extraSpinners + 1, count do
-    local extraSpinner = createSpinner(region, "OVERLAY", min(i, 7));
+    local extraSpinner = createSpinner(region, "OVERLAY", min(i, 7), region.mask)
     extraSpinner:SetTextureOrAtlas(region.currentTexture);
     extraSpinner:SetBlendMode(region.foreground:GetBlendMode());
     extraSpinner:SetAuraRotation(region.auraRotation / 180 * math.pi)
@@ -989,15 +991,27 @@ local function create(parent)
     region:SetMinResize(1, 1)
   end
 
-  local background = createTexture(region, "BACKGROUND", 0);
+  local maskVisual = region:CreateTexture(nil, "ARTWORK")
+  maskVisual:SetDrawLayer("ARTWORK", 7)
+  maskVisual:SetTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\Square_FullWhite.tga",
+                        "CLAMPTOBLACK", "CLAMPTOBLACK")
+  maskVisual:SetVertexColor(1, 0, 0, 0.5)
+  region.maskVisual = maskVisual
+
+  local mask = region:CreateMaskTexture()
+  mask:SetTexture("Interface\\AddOns\\WeakAuras\\Media\\Textures\\Square_FullWhite.tga",
+                  "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+  region.mask = mask
+
+  local background = createTexture(region, "BACKGROUND", 0, mask)
   region.background = background;
 
   -- For horizontal/vertical progress
-  local foreground = createTexture(region, "ARTWORK", 0);
+  local foreground = createTexture(region, "ARTWORK", 0, mask)
   region.foreground = foreground;
 
-  region.foregroundSpinner = createSpinner(region, "ARTWORK", 1);
-  region.backgroundSpinner = createSpinner(region, "BACKGROUND", 1);
+  region.foregroundSpinner = createSpinner(region, "ARTWORK", 1, mask)
+  region.backgroundSpinner = createSpinner(region, "BACKGROUND", 1, mask)
 
   region.extraTextures = {};
   region.extraSpinners = {};
@@ -1086,6 +1100,8 @@ local function modify(parent, region, data)
   region.auraRotation = data.auraRotation or 0
   region.user_x = -1 * (data.user_x or 0);
   region.user_y = data.user_y or 0;
+  region.rotationOrigin = { x = 0.5 + region.user_x,
+                            y = 0.5 - region.user_y }
 
   region.startAngle = (data.startAngle or 0) % 360;
   region.endAngle = (data.endAngle or 360) % 360;
@@ -1098,6 +1114,7 @@ local function modify(parent, region, data)
 
   region.inverseDirection = data.inverse;
   region.progress = 0.667;
+
   backgroundSpinner:SetProgress(region, region.startAngle, region.endAngle);
   backgroundSpinner:SetBackgroundOffset(region, data.backgroundOffset);
 
@@ -1149,8 +1166,19 @@ local function modify(parent, region, data)
       end
     end
 
-    region:SetWidth(region.width * region.scalex);
-    region:SetHeight(region.height * region.scaley);
+    local w = region.width * region.scalex
+    local h = region.height * region.scaley
+    region:SetWidth(w)
+    region:SetHeight(h)
+
+    local xScale = region.crop_x / 1.41
+    local yScale = region.crop_y / 1.41
+    region.mask:SetWidth(w * xScale)
+    region.mask:SetHeight(h * yScale)
+    region.maskVisual:SetWidth(w * xScale)
+    region.maskVisual:SetHeight(h * yScale)
+    region.mask:SetPoint("CENTER", region, "CENTER", -region.user_x * w * xScale, region.user_y * h * yScale)
+    region.maskVisual:SetPoint("CENTER", region, "CENTER", -region.user_x * w * xScale, region.user_y * h * yScale)
 
     if (data.orientation == "CLOCKWISE" or data.orientation == "ANTICLOCKWISE") then
       region.foregroundSpinner:UpdateSize()
@@ -1190,6 +1218,7 @@ local function modify(parent, region, data)
     for _, extraTexture in ipairs(region.extraTextures) do
       extraTexture:SetAuraRotation(auraRotationRadians)
     end
+    region:ApplyMaskRotation()
   end
 
   region:SetAuraRotation(data.auraRotation)
@@ -1218,7 +1247,6 @@ local function modify(parent, region, data)
 
   function region:Rotate(angle)
     region.rotation = angle or 0;
-    local texRotation = region.texRotation / 180 * math.pi
     if (data.orientation == "CLOCKWISE" or data.orientation == "ANTICLOCKWISE") then
       region.foregroundSpinner:UpdateSize();
       region.backgroundSpinner:UpdateSize();
@@ -1232,6 +1260,7 @@ local function modify(parent, region, data)
         extraTexture:Update();
       end
     end
+    region:ApplyMaskRotation()
   end
 
   region:Rotate(data.rotation)
