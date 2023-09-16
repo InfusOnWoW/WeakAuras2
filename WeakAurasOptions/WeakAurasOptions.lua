@@ -668,6 +668,7 @@ local function LayoutDisplayButtons(msg)
   local loadedSorted, unloadedSorted = GetSortedOptionsLists();
 
   frame:SetLoadProgressVisible(true)
+  OptionsPrivate.TTSFocus:SpeakText(L["Loading Auras"])
   if OptionsPrivate.Private.CompanionData.slugs then
     frame.buttonsScroll:AddChild(frame.pendingInstallButton);
     frame.buttonsScroll:AddChild(frame.pendingUpdateButton);
@@ -714,6 +715,10 @@ local function LayoutDisplayButtons(msg)
     OptionsPrivate.Private.ResumeAllDynamicGroups(suspended)
 
     frame:SetLoadProgressVisible(false)
+    -- TODO depend on which page is open?
+    if not OptionsPrivate.TTSFocus:HasFocus() then
+      OptionsPrivate.TTSFocus:SetFocus(frame.buttonsScroll)
+    end
   end
 
   local func1 = function()
@@ -870,7 +875,6 @@ function WeakAuras.ShowOptions(msg)
   if firstLoad then
     frame:ShowTip()
   end
-
 end
 
 function OptionsPrivate.UpdateOptions()
@@ -1508,6 +1512,7 @@ function OptionsPrivate.Drop(mainAura, target, action, area)
     end
     coroutine.yield()
     frame:SetLoadProgressVisible(false)
+
     OptionsPrivate.SortDisplayButtons()
     OptionsPrivate.UpdateButtonsScroll()
     WeakAuras.FillOptions()
