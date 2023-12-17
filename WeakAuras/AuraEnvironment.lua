@@ -5,12 +5,6 @@ local AddonName, Private = ...
 local WeakAuras = WeakAuras
 local L = WeakAuras.L
 
-local LCD
-if WeakAuras.IsClassicEra() then
-  LCD = LibStub("LibClassicDurations")
-  LCD:RegisterFrame("WeakAuras")
-end
-
 local LibSerialize = LibStub("LibSerialize")
 local LibDeflate = LibStub:GetLibrary("LibDeflate")
 
