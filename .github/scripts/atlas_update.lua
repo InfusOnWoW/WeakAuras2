@@ -2,7 +2,7 @@
 local function splitLine(line)
   local result = {}
   for col in line:gmatch('[^,%s]+') do
-    tinsert(result, col)
+    table.insert(result, col)
   end
   return unpack(result)
 end
