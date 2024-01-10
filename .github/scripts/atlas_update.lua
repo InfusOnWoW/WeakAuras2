@@ -4,7 +4,7 @@ local function splitLine(line)
   for col in line:gmatch('[^,%s]+') do
     table.insert(result, col)
   end
-  return unpack(result)
+  return table.unpack(result)
 end
 
 local validAtlasIds = {}
