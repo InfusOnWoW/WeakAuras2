@@ -35,10 +35,10 @@ for line in io.lines("UiTextureAtlasElement.csv") do
   end
 end
 
-for _, name in pairs(validNames) do
+for name in pairs(validNames) do
   print("Found name", name)
 end
 
-for _, name in pairs(invalidNames) do
+for name in pairs(invalidNames) do
   print("Ignoring name", name)
 end
