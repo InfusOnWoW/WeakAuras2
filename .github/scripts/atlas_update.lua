@@ -22,6 +22,7 @@ end
 
 for line in io.lines("UiTextureAtlasMember.csv") do
   local name, id, atlasId = splitLine(line)
+  name = name:lower()
   if validAtlasIds[atlasId] and not validAtlasMemberIds[id] then
     validAtlasMemberIds[id] = true
     print("Found atlas member id", id, " in ", line)
@@ -31,6 +32,7 @@ end
 
 for line in io.lines("UiTextureAtlasElement.csv") do
   local name, id = splitLine(line)
+  name = name:lower()
   if validAtlasMemberIds[id] then
     validNames[name] = true
   else
