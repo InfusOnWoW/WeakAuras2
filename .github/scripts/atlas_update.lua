@@ -12,6 +12,8 @@ local validAtlasMemberIds = {}
 local validNames = {}
 local invalidNames = {}
 
+local oldNames = {}
+
 for line in io.lines("UiTextureAtlas.csv") do
   local atlasId = splitLine(line)
   validAtlasIds[atlasId] = true
@@ -24,6 +26,7 @@ for line in io.lines("UiTextureAtlasMember.csv") do
     validAtlasMemberIds[id] = true
     print("Found atlas member id", id, " in ", line)
   end
+  oldNames[name] = true
 end
 
 for line in io.lines("UiTextureAtlasElement.csv") do
@@ -36,9 +39,21 @@ for line in io.lines("UiTextureAtlasElement.csv") do
 end
 
 for name in pairs(validNames) do
-  print("Found name", name)
+  if oldNames[name] then
+    --print("Found name", name)
+  else
+    print("Found +", name)
+  end
 end
 
-for name in pairs(invalidNames) do
-  print("Ignoring name", name)
+for name in pairs(oldNames) do
+  if validNames[name] then
+    --
+  else
+    print("Found -", name)
+  end
 end
+
+--for name in pairs(invalidNames) do
+--  print("Ignoring name", name)
+--end
