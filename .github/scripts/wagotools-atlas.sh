@@ -13,4 +13,5 @@ do
     echo "Success"
     # mv ModelPaths*.lua ../../WeakAurasModelPaths/
   fi
+
 done
