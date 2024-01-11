@@ -17,7 +17,7 @@ local oldNames = {}
 for line in io.lines("UiTextureAtlas.csv") do
   local atlasId = splitLine(line)
   validAtlasIds[atlasId] = true
-  print("Found atlas Id", atlasId, " in ", line)
+  --print("Found atlas Id", atlasId, " in ", line)
 end
 
 for line in io.lines("UiTextureAtlasMember.csv") do
@@ -25,7 +25,7 @@ for line in io.lines("UiTextureAtlasMember.csv") do
   name = name:lower()
   if validAtlasIds[atlasId] and not validAtlasMemberIds[id] then
     validAtlasMemberIds[id] = true
-    print("Found atlas member id", id, " in ", line)
+    --print("Found atlas member id", id, " in ", line)
   end
   oldNames[name] = true
 end
