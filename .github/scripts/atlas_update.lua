@@ -8,7 +8,7 @@ local function splitLine(line)
 end
 
 local validAtlasIds = {}
-local validAtlasMemberIds = {}
+local validAtlasElementIds = {}
 local validNames = {}
 local invalidNames = {}
 
@@ -21,10 +21,10 @@ for line in io.lines("UiTextureAtlas.csv") do
 end
 
 for line in io.lines("UiTextureAtlasMember.csv") do
-  local name, id, atlasId = splitLine(line)
+  local name, id, uiTextureAtlasID, left, right, top, bottom, uiTextureAtlasElementId = splitLine(line)
   name = name:lower()
-  if validAtlasIds[atlasId] and not validAtlasMemberIds[id] then
-    validAtlasMemberIds[id] = true
+  if validAtlasIds[uiTextureAtlasID] and not validAtlasElementIds[uiTextureAtlasElementId] then
+    validAtlasElementIds[uiTextureAtlasElementId] = true
     --print("Found atlas member id", id, " in ", line)
   end
   oldNames[name] = true
@@ -33,7 +33,7 @@ end
 for line in io.lines("UiTextureAtlasElement.csv") do
   local name, id = splitLine(line)
   name = name:lower()
-  if validAtlasMemberIds[id] then
+  if validAtlasElementIds[id] then
     validNames[name] = true
   else
     invalidNames[name] = true
