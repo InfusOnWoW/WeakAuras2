@@ -24,7 +24,7 @@ jobs:
         shell: bash
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v5
         with:
           branch: update-atlasfiles
           commit-message: Update atlas file list from wago.tools
