@@ -41,21 +41,5 @@ for line in io.lines("UiTextureAtlasElement.csv") do
 end
 
 for name in pairs(validNames) do
-  if oldNames[name] then
-    --print("Found name", name)
-  else
-    print("Found +", name)
-  end
+  print("Found +", name)
 end
-
-for name in pairs(oldNames) do
-  if validNames[name] then
-    --
-  else
-    print("Found -", name)
-  end
-end
-
---for name in pairs(invalidNames) do
---  print("Ignoring name", name)
---end
