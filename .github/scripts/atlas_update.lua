@@ -1,4 +1,7 @@
+local ftcsv = require('ftcsv')
+print(ftcsv)
 
+-- TODO delete old atlas lua files
 local function splitLine(line)
   local result = {}
   for col in line:gmatch('[^,%s]+') do
