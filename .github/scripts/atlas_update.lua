@@ -1,13 +1,6 @@
 local ftcsv = require('ftcsv')
 
 -- TODO delete old atlas lua files
-local function splitLine(line)
-  local result = {}
-  for col in line:gmatch('[^,%s]+') do
-    table.insert(result, col)
-  end
-  return table.unpack(result)
-end
 
 local validAtlasIds = {}
 local validAtlasElementIds = {}
@@ -21,16 +14,14 @@ for lineNr, member in ftcsv.parseLine("UiTextureAtlasMember.csv", ",") do
   local uiTextureAtlasID = member.UiTextureAtlasID
   local uiTextureAtlasElementId = member.UiTextureAtlasElementID
 
-  print(uiTextureAtlasID, uiTextureAtlasElementId)
-
   if validAtlasIds[uiTextureAtlasID] and not validAtlasElementIds[uiTextureAtlasElementId] then
     validAtlasElementIds[uiTextureAtlasElementId] = true
   end
 end
 
-for line in io.lines("UiTextureAtlasElement.csv") do
-  local name, id = splitLine(line)
-  name = name:lower()
+for lineNr, element in ftcsv.parseLine("UiTextureAtlasElement.csv", ",") do
+  local name = element.Name
+  local id = element.ID
   if validAtlasElementIds[id] and name:lower():sub(1, 5) ~= "cguy_" then
     validNames[name] = true
   end
