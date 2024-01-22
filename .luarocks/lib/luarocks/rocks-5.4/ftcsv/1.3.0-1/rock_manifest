@@ -1,0 +1,11 @@
+rock_manifest = {
+   doc = {
+      ["ERRORS.md"] = "979370ea56af6509157585eccf6aeec2",
+      LICENSE = "4ab2be0131b94f4a2f7fa6efe327e277",
+      ["README.md"] = "6374400c7018ca7a779adb1f73301407"
+   },
+   ["ftcsv-1.3.0-1.rockspec"] = "3af534e530ea6e7c3a1b35a92f637784",
+   lua = {
+      ["ftcsv.lua"] = "cf2138dd20789878e805916b6af3a519"
+   }
+}
