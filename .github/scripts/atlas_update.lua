@@ -14,8 +14,9 @@ local validAtlasIds = {}
 local validAtlasElementIds = {}
 local validNames = {}
 
-for line in io.lines("UiTextureAtlas.csv") do
-  local atlasId = splitLine(line)
+for lineNr, atlas in ftcsv.parseLine("UiTextureAtlas.csv", ",") do
+  local atlasId = atlas.ID
+  print("atlas id", atlasId)
   validAtlasIds[atlasId] = true
 end
 
