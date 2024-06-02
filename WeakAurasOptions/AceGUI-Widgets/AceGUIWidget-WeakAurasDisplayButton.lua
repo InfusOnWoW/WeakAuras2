@@ -893,11 +893,14 @@ local methods = {
       notCheckable = true,
       func = function() OptionsPrivate.ExportToString(self.data.id) end
     });
-    tinsert(self.menu, {
-      text = L["Export debug table..."],
-      notCheckable = true,
-      func = function() OptionsPrivate.ExportToTable(self.data.id) end
-    });
+
+    if WeakAuras.buildType == "dev" then
+      tinsert(self.menu, {
+        text = L["Export debug table..."],
+        notCheckable = true,
+        func = function() OptionsPrivate.ExportToTable(self.data.id) end
+      })
+    end
 
     tinsert(self.menu, {
       text = " ",
