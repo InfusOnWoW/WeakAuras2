@@ -11,6 +11,7 @@ on:
 
 jobs:
   build:
+    if: github.repository == 'WeakAuras/WeakAuras2'
     runs-on: ubuntu-latest
 
     steps:
