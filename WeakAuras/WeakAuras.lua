@@ -142,6 +142,18 @@ do
   end
 end
 
+function Private.LoadAddOn(name)
+  local version = C_AddOns.GetAddOnMetadata(name, "Version")
+  if version ~= WeakAuras.versionStringFromToc then
+    return false, "|cffff2020" .. _G.ADDON_INCOMPATIBLE .. "|r. " .. L["The version is unexpectably different %s vs %s."]:format(version, WeakAuras.versionString)
+  end
+  local loaded, reason = C_AddOns.LoadAddOn(name);
+  if reason then
+    reason = string.lower("|cffff2020" .. _G["ADDON_" .. reason] .. "|r.")
+  end
+  return loaded, reason
+end
+
 function Private.LoadOptions(msg)
   if not(C_AddOns.IsAddOnLoaded("WeakAurasOptions")) then
     if not WeakAuras.IsLoginFinished() then
@@ -154,9 +166,8 @@ function Private.LoadOptions(msg)
       Private.frames["Addon Initialization Handler"]:RegisterEvent("PLAYER_REGEN_ENABLED")
       return false;
     else
-      local loaded, reason = C_AddOns.LoadAddOn("WeakAurasOptions");
+      local loaded, reason = Private.LoadAddOn("WeakAurasOptions");
       if not(loaded) then
-        reason = string.lower("|cffff2020" .. _G["ADDON_" .. reason] .. "|r.")
         WeakAuras.prettyPrint(string.format(L["Options could not be loaded, the addon is %s"], reason));
         return false;
       end
@@ -1197,9 +1208,8 @@ do -- Archive stuff
       return Archivist
     else
       if not C_AddOns.IsAddOnLoaded("WeakAurasArchive") then
-        local ok, reason = C_AddOns.LoadAddOn("WeakAurasArchive")
+        local ok, reason = Private.LoadAddOn("WeakAurasArchive")
         if not ok then
-          reason = string.lower("|cffff2020" .. _G["ADDON_" .. reason] .. "|r.")
           error(string.format(L["Could not load WeakAuras Archive, the addon is %s"], reason))
         end
       end

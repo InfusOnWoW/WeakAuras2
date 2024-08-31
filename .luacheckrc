@@ -3070,7 +3070,6 @@ globals = {
 	"LeaveSingleLFG",
 	"ListChannelByName",
 	"ListChannels",
-	"LoadAddOn",
 	"LoadBindings",
 	"LoadURLIndex",
 	"LoggingChat",

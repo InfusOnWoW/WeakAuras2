@@ -404,6 +404,8 @@ WeakAuras.buildType = "alpha"
 WeakAuras.buildType = "pr"
 --@end-experimental@
 
+WeakAuras.versionStringFromToc = versionStringFromToc
+
 --@debug@
 if versionStringFromToc == "@project-version@" then
   versionStringFromToc = "Dev"
