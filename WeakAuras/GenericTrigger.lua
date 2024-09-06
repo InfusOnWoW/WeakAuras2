@@ -2419,7 +2419,7 @@ do
   --- @field name string
   --- @field icon number
   --- @field id number
-  --- @field watched number[]
+  --- @field watched table<number, boolean>
 
   -- Basic details like name, icon, charges, times per effective spell id
   -- Also contains the mapping from effective spell id to watched
@@ -2465,10 +2465,10 @@ do
         name = name,
         icon = icon,
         id = spellId,
-        watched = { effectiveSpellId }
+        watched = { [effectiveSpellId] = true }
       }
       if effectiveSpellId ~= userSpellId then
-        tinsert(self.data[effectiveSpellId].watched, userSpellId)
+        self.data[effectiveSpellId].watched[userSpellId] = true
       end
 
       local spellDetail = self.data[effectiveSpellId]
@@ -2506,10 +2506,10 @@ do
               -- There are lots of cases to consider here:
 
               -- For the new effective spell id
-              -- a) We are already tracking it, only add the wathed spell ids
+              -- a) We are already tracking it, only add the watched spell ids
               -- b) We aren't tracking it yet add it
               if self.data[newEffectiveSpellId] then
-                tinsert(self.data[newEffectiveSpellId].watched, userSpellId)
+                self.data[newEffectiveSpellId].watched[userSpellId] = true
               else
                 self:AddEffectiveSpellId(newEffectiveSpellId, userSpellId)
               end
@@ -2530,8 +2530,8 @@ do
               -- For the old effective spell id
               -- * Remove the spell from watched
               -- * If we removed the last mapping, remove the spell details of the effective spell id
-              tremove(oldSpellDetail.watched, userSpellId)
-              if #oldSpellDetail.watched == 0 then
+              oldSpellDetail.watched[userSpellId] = nil
+              if next(oldSpellDetail.watched) == nil then
                 self.data[oldEffectiveSpellId] = nil
               end
 
@@ -2671,9 +2671,7 @@ do
 
       if self.data[effectiveSpellId] then
         -- But we are already tracking the effectiveSpellId, so only add the mapping
-        if not tContains(self.data[effectiveSpellId].watched, userSpellId) then
-          tinsert(self.data[effectiveSpellId].watched, userSpellId)
-        end
+        self.data[effectiveSpellId].watched[userSpellId] = true
         return
       end
 
@@ -2683,7 +2681,7 @@ do
     SendEventsForSpell = function(self, effectiveSpellId, event, ...)
       local watchedSpells = self.data[effectiveSpellId] and self.data[effectiveSpellId].watched
       if watchedSpells then
-        for _, userSpellId in ipairs(watchedSpells) do
+        for userSpellId in pairs(watchedSpells) do
           Private.ScanEventsByID(event, userSpellId, ...)
         end
       end
