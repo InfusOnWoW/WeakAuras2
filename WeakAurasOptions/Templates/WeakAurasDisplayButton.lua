@@ -709,9 +709,10 @@ local methods = {
             local otherbuttonNode = otherbutton.node
             local parentNode = self.node:GetParent()
             parentNode:MoveNodeRelativeTo(self.node, otherbuttonNode, 0)
-            DevTool:AddData(otherbuttonNode, "otherbuttonNode")
-            parentNode:Invalidate()
-            parentNode.dataProvider:TriggerEvent(TreeDataProviderMixin.Event.OnMove, otherbuttonNode, parentNode, parentNode)
+            otherbutton:Init(otherbutton.node)
+
+            --DevTool:AddData(otherbuttonNode, "otherbuttonNode")
+            --parentNode.dataProvider:TriggerEvent(TreeDataProviderMixin.Event.OnMove, otherbuttonNode, parentNode, parentNode)
             --self:SetData(WeakAuras.GetData(otherbuttonNode.data.auraID))
             --otherbutton:SetData(WeakAuras.GetData(id))
             --self:SetGroupOrder()
@@ -761,14 +762,15 @@ local methods = {
             WeakAuras.Add(parentData);
             OptionsPrivate.Private.AddParents(parentData)
             WeakAuras.ClearAndUpdateOptions(parentData.id)
-            
+
             local otherbutton = OptionsPrivate.GetDisplayButton(otherbuttonName)
             local otherbuttonNode = otherbutton.node
             self.node:GetParent():MoveNodeRelativeTo(self.node, otherbuttonNode, 1)
-            self:SetData(WeakAuras.GetData(otherbuttonNode.data.auraID))
-            otherbutton:SetData(WeakAuras.GetData(id))
-            self:SetGroupOrder()
-            otherbutton:SetGroupOrder()
+            otherbutton:Init(otherbuttonNode)
+            --self:SetData(WeakAuras.GetData(otherbuttonNode.data.auraID))
+            --otherbutton:SetData(WeakAuras.GetData(id))
+            --self:SetGroupOrder()
+            --otherbutton:SetGroupOrder()
             --self.node:Invalidate()
             --otherbuttonNode:Invalidate()
             --otherbutton:Init(thisbuttonNode)
